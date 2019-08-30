@@ -3,7 +3,7 @@ class Parachuter {
         this.word = word;
         this.frameAmount = 0;
         this.saved = false;
-        this.speed = word.length * 2;
+        this.speed = word.length / 2;
         this.image = new Image('paraImage', x, y, width, height, 'noChute', visible);
         this.x = x;
         this.y = y;
