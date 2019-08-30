@@ -19,9 +19,9 @@ var parachuters = [];
 var savedParachuters = [];
 var score = 0;
 var level = 1;
-var lives = 1;
+var lives = 3;
 var gameOver = true;
-var wordsPerLevel = 10;
+var wordsPerLevel = 5;
 var numSaved = 0;
 
 const PARACHUTER_WIDTH = 100;
@@ -58,7 +58,13 @@ function addParachuter() {
 	let wordsForThisLevel = possibleWords.filter((w) => (w.length <= level + 2));
 	let randomWord = wordsForThisLevel[int(random(wordsForThisLevel.length))];
 
-	parachuters.push(new Parachuter(random(50, width - 50), 0, PARACHUTER_WIDTH, PARACHUTER_HEIGHT, randomWord));
+	let newpara = new Parachuter(random(50, width - 50), 0, PARACHUTER_WIDTH, PARACHUTER_HEIGHT, randomWord);
+	if (newpara.textIncomplete.x + newpara.textIncomplete.width >= width) {
+		newpara.x = width / 2;
+		newpara.textIncomplete.x = width / 2;
+	}
+
+	parachuters.push(newpara);
 }
 
 function drawScreens() {
@@ -74,6 +80,7 @@ function drawParachuters() {
 		if (parachuters[p].y - 30 - parachuters[p].textComplete.height >= height) {
 			parachuters.splice(p, 1);
 			lives--;
+			document.getElementById('errorSound').play();
 			updateGameText();
 		}
 	}
@@ -176,32 +183,34 @@ function enterName() {
 }
 
 function showHighScores() {
+	document.getElementById('clickSound').play();
+
 	score = int(score);
 	let finalScore = score;
 	let initials = screens[findScreen('gameDone')].list[4].text;
 
 	firebase.database().ref('scores/').once('value').then(function(snapshot) {
-		let length = 0;
 		let array = snapshot.val();
+		let length = array.length;
 
-		if (snapshot.val() != null) {
-			let length = snapshot.val().length;
-		}
+		// if (snapshot.val() != null) {
+		// 	let length = snapshot.val().length;
+		// }
 
-		if (length < 9) {
-			array = [];
-			for(let x = length; x < 9; x++) {
-				firebase.database().ref('scores/' + x).set({
-					name: 'I V N',
-					score: 0
-				});
-				let toPush = {
-					name: 'I V N',
-					score: 0
-				};
-				array.push(toPush);
-			}
-		}
+		// if (length < 9) {
+		// 	array = [];
+		// 	for(let x = length; x < 9; x++) {
+		// 		firebase.database().ref('scores/' + x).set({
+		// 			name: 'I V N',
+		// 			score: 0
+		// 		});
+		// 		let toPush = {
+		// 			name: 'I V N',
+		// 			score: 0
+		// 		};
+		// 		array.push(toPush);
+		// 	}
+		// }
 
 		firebase.database().ref('scores/' + length).set({
 			name: initials,
@@ -282,6 +291,9 @@ window.onkeypress = function(e) {
 					level++;
 					wordsPerLevel++;
 					lives++;
+					score += 100;
+					document.getElementById('nextLevelSound').play();
+					updateGameText();
 				}
 			}
 		} else {
@@ -346,6 +358,8 @@ function setupMainMenu() {
 }
 
 function playButtonClicked() {
+	document.getElementById('clickSound').play();
+
 	let pos = findScreen('gameScreen');
 
 	if (pos == -1) {
@@ -398,6 +412,8 @@ function updateGameText() {
 }
 
 function howToPlayButtonClicked() {
+	document.getElementById('clickSound').play();
+
 	let pos = findScreen('howToPlayScreen');
 
 	if (pos === -1) {
@@ -423,6 +439,8 @@ function howToPlayButtonClicked() {
 }
 
 function fromHTPtoMM() {
+	document.getElementById('clickSound').play();
+
     currentScreen = 0;
     makeOnlyCurrentVisible();
 }
